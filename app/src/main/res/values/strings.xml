@@ -1,4 +1,5 @@
 <resources>
+    <string name="key_refresh">MeP7c5neFxxaQJVeZM0BkT97oZ7EzT9OugflAAtwhNus1Zf4tTBYGB5RUF</string>
     <string name="app_name">Pagination</string>
     <string name="my_api_key">ec01f8c2eb6ac402f2ca026dc2d9b8fd</string>
     <string name="error_msg">Sorry! Couldn\'t fetch movies.</string>

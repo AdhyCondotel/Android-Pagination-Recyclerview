@@ -1,7 +1,6 @@
 package com.suleiman.pagination;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -12,16 +11,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
-import com.bumptech.glide.DrawableRequestBuilder;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
-import com.suleiman.pagination.models.Result;
+import com.suleiman.pagination.models.ListacaratvsItem;
 import com.suleiman.pagination.utils.PaginationAdapterCallback;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,11 +25,8 @@ public class PaginationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     // View Types
     private static final int ITEM = 0;
     private static final int LOADING = 1;
-    private static final int HERO = 2;
 
-    private static final String BASE_URL_IMG = "https://image.tmdb.org/t/p/w150";
-
-    private List<Result> movieResults;
+    private List<ListacaratvsItem> movieResults;
     private Context context;
 
     private boolean isLoadingAdded = false;
@@ -52,14 +40,6 @@ public class PaginationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         this.context = context;
         this.mCallback = (PaginationAdapterCallback) context;
         movieResults = new ArrayList<>();
-    }
-
-    public List<Result> getMovies() {
-        return movieResults;
-    }
-
-    public void setMovies(List<Result> movieResults) {
-        this.movieResults = movieResults;
     }
 
     @Override
@@ -76,56 +56,23 @@ public class PaginationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 View viewLoading = inflater.inflate(R.layout.item_progress, parent, false);
                 viewHolder = new LoadingVH(viewLoading);
                 break;
-            case HERO:
-                View viewHero = inflater.inflate(R.layout.item_hero, parent, false);
-                viewHolder = new HeroVH(viewHero);
-                break;
-        }
+         }
         return viewHolder;
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        Result result = movieResults.get(position); // Movie
+        ListacaratvsItem result = movieResults.get(position); // Movie
 
         switch (getItemViewType(position)) {
-
-            case HERO:
-                final HeroVH heroVh = (HeroVH) holder;
-
-                heroVh.mMovieTitle.setText(result.getTitle());
-                heroVh.mYear.setText(formatYearLabel(result));
-                heroVh.mMovieDesc.setText(result.getOverview());
-
-                loadImage(result.getBackdropPath())
-                        .into(heroVh.mPosterImg);
-                break;
-
             case ITEM:
                 final MovieVH movieVH = (MovieVH) holder;
 
-                movieVH.mMovieTitle.setText(result.getTitle());
-                movieVH.mYear.setText(formatYearLabel(result));
-                movieVH.mMovieDesc.setText(result.getOverview());
+                movieVH.mMovieTitle.setText(result.getNamaAcaratv());
 
-                // load movie thumbnail
-                loadImage(result.getPosterPath())
-                        .listener(new RequestListener<String, GlideDrawable>() {
-                            @Override
-                            public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                                // TODO: 08/11/16 handle failure
-                                movieVH.mProgress.setVisibility(View.GONE);
-                                return false;
-                            }
+                movieVH.mMovieDesc.setText(result.getViewers());
 
-                            @Override
-                            public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                                // image ready, hide progress now
-                                movieVH.mProgress.setVisibility(View.GONE);
-                                return false;   // return false if you want Glide to handle everything else.
-                            }
-                        })
-                        .into(movieVH.mPosterImg);
+
                 break;
 
             case LOADING:
@@ -156,43 +103,12 @@ public class PaginationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     @Override
     public int getItemViewType(int position) {
         if (position == 0) {
-            return HERO;
+            return ITEM;
         } else {
             return (position == movieResults.size() - 1 && isLoadingAdded) ? LOADING : ITEM;
         }
     }
 
-    /*
-        Helpers - bind Views
-   _________________________________________________________________________________________________
-    */
-
-    /**
-     * @param result
-     * @return [releasedate] | [2letterlangcode]
-     */
-    private String formatYearLabel(Result result) {
-        return result.getReleaseDate().substring(0, 4)  // we want the year only
-                + " | "
-                + result.getOriginalLanguage().toUpperCase();
-    }
-
-    /**
-     * Using Glide to handle image loading.
-     * Learn more about Glide here:
-     * <a href="http://blog.grafixartist.com/image-gallery-app-android-studio-1-4-glide/" />
-     *
-     * @param posterPath from {@link Result#getPosterPath()}
-     * @return Glide builder
-     */
-    private DrawableRequestBuilder<String> loadImage(@NonNull String posterPath) {
-        return Glide
-                .with(context)
-                .load(BASE_URL_IMG + posterPath)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)   // cache both original & resized image
-                .centerCrop()
-                .crossFade();
-    }
 
 
     /*
@@ -200,47 +116,28 @@ public class PaginationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
    _________________________________________________________________________________________________
     */
 
-    public void add(Result r) {
+    public void add(ListacaratvsItem r) {
         movieResults.add(r);
         notifyItemInserted(movieResults.size() - 1);
     }
 
-    public void addAll(List<Result> moveResults) {
-        for (Result result : moveResults) {
+    public void addAll(List<ListacaratvsItem> moveResults) {
+        for (ListacaratvsItem result : moveResults) {
             add(result);
         }
-    }
-
-    public void remove(Result r) {
-        int position = movieResults.indexOf(r);
-        if (position > -1) {
-            movieResults.remove(position);
-            notifyItemRemoved(position);
-        }
-    }
-
-    public void clear() {
-        isLoadingAdded = false;
-        while (getItemCount() > 0) {
-            remove(getItem(0));
-        }
-    }
-
-    public boolean isEmpty() {
-        return getItemCount() == 0;
     }
 
 
     public void addLoadingFooter() {
         isLoadingAdded = true;
-        add(new Result());
+        add(new ListacaratvsItem());
     }
 
     public void removeLoadingFooter() {
         isLoadingAdded = false;
 
         int position = movieResults.size() - 1;
-        Result result = getItem(position);
+        ListacaratvsItem result = getItem(position);
 
         if (result != null) {
             movieResults.remove(position);
@@ -248,7 +145,7 @@ public class PaginationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         }
     }
 
-    public Result getItem(int position) {
+    public ListacaratvsItem getItem(int position) {
         return movieResults.get(position);
     }
 
@@ -265,30 +162,6 @@ public class PaginationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         if (errorMsg != null) this.errorMsg = errorMsg;
     }
 
-
-   /*
-   View Holders
-   _________________________________________________________________________________________________
-    */
-
-    /**
-     * Header ViewHolder
-     */
-    protected class HeroVH extends RecyclerView.ViewHolder {
-        private TextView mMovieTitle;
-        private TextView mMovieDesc;
-        private TextView mYear; // displays "year | language"
-        private ImageView mPosterImg;
-
-        public HeroVH(View itemView) {
-            super(itemView);
-
-            mMovieTitle = (TextView) itemView.findViewById(R.id.movie_title);
-            mMovieDesc = (TextView) itemView.findViewById(R.id.movie_desc);
-            mYear = (TextView) itemView.findViewById(R.id.movie_year);
-            mPosterImg = (ImageView) itemView.findViewById(R.id.movie_poster);
-        }
-    }
 
     /**
      * Main list's content ViewHolder
